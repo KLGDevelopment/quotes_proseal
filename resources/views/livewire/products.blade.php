@@ -20,8 +20,9 @@
             </div>
         </form>
     @else
-        <div class="mb-3">
-            <button type="button" wire:click="create" class="btn btn-primary">Agregar</button>
+        <div class="mb-3 d-flex">
+            <button type="button" wire:click="create" class="btn btn-primary me-2">Agregar</button>
+            <input type="text" wire:model.debounce.500ms="search" class="form-control" placeholder="Buscar...">
         </div>
     @endif
 
