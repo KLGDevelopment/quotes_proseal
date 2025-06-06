@@ -12,6 +12,7 @@ use Livewire\Attributes\Layout;
 class Products extends Component
 {
     public $products, $code, $name, $productId;
+    public $search = '';
     public $isEdit = false;
     protected $listeners = ['deleteProduct' => 'delete'];
     public $showForm = false;
@@ -20,7 +21,19 @@ class Products extends Component
 
     public function render()
     {
-        $this->products = Product::orderBy('id', 'desc')->get();
+        $query = Product::query();
+
+        if ($this->search !== '') {
+            $search = $this->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $this->products = $query->orderBy('id', 'desc')->get();
+
         return view('livewire.products');
     }
 
