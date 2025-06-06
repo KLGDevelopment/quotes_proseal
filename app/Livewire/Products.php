@@ -4,67 +4,91 @@
 
 namespace App\Livewire;
 
+
 use Livewire\Component;
 use App\Models\Product;
 use Livewire\Attributes\Layout;
+use Livewire\WithPagination;
 
 #[Layout('layouts.livewire-adminlte')]
 class Products extends Component
 {
+    
+    use WithPagination;
+    
     public $products, $code, $name, $productId;
     public $search = '';
     public $isEdit = false;
     protected $listeners = ['deleteProduct' => 'delete'];
     public $showForm = false;
-
-
-
+    
+    protected $paginationTheme = 'bootstrap';
+    
     public function render()
     {
         $query = Product::query();
-
+        
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+                ->orWhere('code', 'like', "%{$search}%")
+                ->orWhere('name', 'like', "%{$search}%");
             });
         }
-
+        
         $this->products = $query->orderBy('id', 'desc')->get();
-
+        
         return view('livewire.products');
     }
-
+    
+    public function clearSearch()
+    {
+        $this->search = '';
+        $this->resetPage();
+        $this->refreshData();
+    }
+    
+    public function applySearch()
+    {
+        $this->resetPage();
+        $this->refreshData();
+    }
+    
+    public function refreshData()
+    {
+        $this->dispatch('$refresh');
+    }
+    
+    
     public function create()
     {
         $this->reset(['code', 'name', 'productId', 'isEdit']);
         $this->showForm = true;
     }
-
-public function save()
-{
-    $this->validate([
-        'code' => 'required|unique:products,code,' . $this->productId,
-        'name' => 'required|string|min:2',
-    ]);
-
-    if ($this->productId) {
-        Product::find($this->productId)?->update([
-            'code' => $this->code,
-            'name' => $this->name,
+    
+    public function save()
+    {
+        $this->validate([
+            'code' => 'required|unique:products,code,' . $this->productId,
+            'name' => 'required|string|min:2',
         ]);
-    } else {
-        Product::create([
-            'code' => $this->code,
-            'name' => $this->name,
-        ]);
+        
+        if ($this->productId) {
+            Product::find($this->productId)?->update([
+                'code' => $this->code,
+                'name' => $this->name,
+            ]);
+        } else {
+            Product::create([
+                'code' => $this->code,
+                'name' => $this->name,
+            ]);
+        }
+        
+        $this->resetForm();
     }
-
-    $this->resetForm();
-    }
-
+    
     public function edit($id)
     {
         $product = Product::findOrFail($id);
@@ -74,12 +98,12 @@ public function save()
         $this->isEdit = true;
         $this->showForm = true;
     }
-
+    
     public function delete($id)
     {
         Product::destroy($id);
     }
-
+    
     public function resetForm()
     {
         $this->reset(['code', 'name', 'productId', 'isEdit']);
