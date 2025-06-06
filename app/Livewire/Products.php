@@ -14,6 +14,7 @@ class Products extends Component
     public $products, $code, $name, $productId;
     public $isEdit = false;
     protected $listeners = ['deleteProduct' => 'delete'];
+    public $showForm = false;
 
 
 
@@ -21,6 +22,12 @@ class Products extends Component
     {
         $this->products = Product::orderBy('id', 'desc')->get();
         return view('livewire.products');
+    }
+
+    public function create()
+    {
+        $this->reset(['code', 'name', 'productId', 'isEdit']);
+        $this->showForm = true;
     }
 
 public function save()
@@ -43,7 +50,7 @@ public function save()
     }
 
     $this->resetForm();
-}
+    }
 
     public function edit($id)
     {
@@ -52,6 +59,7 @@ public function save()
         $this->code = $product->code;
         $this->name = $product->name;
         $this->isEdit = true;
+        $this->showForm = true;
     }
 
     public function delete($id)
@@ -62,6 +70,7 @@ public function save()
     public function resetForm()
     {
         $this->reset(['code', 'name', 'productId', 'isEdit']);
+        $this->showForm = false;
     }
 }
 
