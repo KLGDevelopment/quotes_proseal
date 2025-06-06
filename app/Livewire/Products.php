@@ -13,6 +13,7 @@ class Products extends Component
 {
     public $products, $code, $name, $productId;
     public $isEdit = false;
+    protected $listeners = ['deleteProduct' => 'delete'];
 
 
 

@@ -36,7 +36,7 @@
                     <td>{{ $product->name }}</td>
                     <td>
                         <button wire:click="edit({{ $product->id }})" class="btn btn-sm btn-warning">Editar</button>
-                        <button wire:click="delete({{ $product->id }})" class="btn btn-sm btn-danger">Eliminar</button>
+                        <button type="button" onclick="confirmDelete({{ $product->id }})" class="btn btn-sm btn-danger">Eliminar</button>
                     </td>
                 </tr>
             @empty
@@ -45,3 +45,22 @@
         </tbody>
     </table>
 </div>
+
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'Está seguro de eliminar el registro?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.emit('deleteProduct', id);
+                }
+            });
+        }
+    </script>
+@endpush
