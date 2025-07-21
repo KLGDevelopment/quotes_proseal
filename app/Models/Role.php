@@ -2,20 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Laratrust\Models\Role as LaratrustRole;
+use Laratrust\Models\Role as RoleModel;
 
-class Role extends LaratrustRole
+class Role extends RoleModel
 {
-    protected $fillable = ['name'];
-
-    public function profiles()
-    {
-        return $this->belongsToMany(Profile::class);
-    }
-
-    public function users()
-    {
-        return $this->belongsToMany(User::class);
-    }
+    public $guarded = [];
 }

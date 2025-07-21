@@ -6,9 +6,27 @@
     @if($showForm)
     <form wire:submit.prevent="save" class="mb-4">
         <div>
-            <label>Nombre:</label>
+            <label>Slug: (Debe ser único)</label>
             <input wire:model.defer="name" type="text" class="form-control">
             @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+        </div>
+        <div>
+            <label>Nombre:</label>
+            <input wire:model.defer="displayName" type="text" class="form-control">
+            @error('displayName') <span class="text-danger">{{ $message }}</span> @enderror
+        </div>
+        <div>
+            <label>Descripción:</label>
+            <input wire:model.defer="description" type="text" class="form-control">
+            @error('description') <span class="text-danger">{{ $message }}</span> @enderror
+        </div>
+        <div>
+            <label>Permisos:</label>
+            <select wire:model="permissionsSelected" multiple class="form-control">
+                @foreach($permissionsList as $permission)
+                    <option value="{{ $permission->id }}">{{ $permission->name }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="mt-2">
             <button class="btn btn-primary">{{ $isEdit ? 'Actualizar' : 'Crear' }}</button>
@@ -43,7 +61,9 @@
                 <thead class="thead-dark">
                     <tr>
                         <th>ID</th>
+                        <th>Slug</th>
                         <th>Nombre</th>
+                        <th>Descripción</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -52,13 +72,15 @@
                     <tr>
                         <td>{{ $role->id }}</td>
                         <td>{{ $role->name }}</td>
+                        <td>{{ $role->display_name }}</td>
+                        <td>{{ $role->description }}</td>
                         <td style="text-align: right">
                             <button wire:click="edit({{ $role->id }})" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></button>
                             <button type="button" onclick="confirmDelete({{ $role->id }})" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="3" class="text-center">Sin roles</td></tr>
+                    <tr><td colspan="5" class="text-center">Sin roles</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -68,7 +90,7 @@
     @endif
 </div>
 
-@push('js')
+
 @push('js')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -81,7 +103,7 @@
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                Livewire.emit('deleteRole', id);
+                window.Livewire.dispatch('deleteRole', { id: id });
             }
         });
     }

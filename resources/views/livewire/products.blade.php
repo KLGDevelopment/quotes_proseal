@@ -29,8 +29,19 @@
         <div class="card-header">
             
             <button type="button" wire:click="create" class="btn btn-sm btn-primary me-2">Agregar</button>
+
+            <button type="button" wire:click="syncFromOdoo" wire:loading.attr="disabled" wire:target="syncFromOdoo" class="btn btn-sm btn-success">
+                <span wire:loading.remove wire:target="syncFromOdoo">
+                    <i class="fas fa-sync-alt"></i> Actualizar desde Odoo
+                </span>
+                <span wire:loading wire:target="syncFromOdoo">
+                    <i class="fas fa-spinner fa-spin"></i> Sincronizando...
+                </span>
+            </button>
+
+
             <div class="card-tools">
-                <div class="input-group input-group-sm" style="width: 250px;">
+                <div class="input-group input-group-sm" style="width: 200px;">
                     <input type="text" wire:model.defer="search"  class="form-control float-right" placeholder="Buscar">
                     
                     <div class="input-group-append">
@@ -49,22 +60,30 @@
             <table class="table table-hover table-bordered table-sm  table-striped">
                 <thead class="thead-dark">
                     <tr>
-                        <th>ID</th>
-                        <th>Código</th>
-                        <th>Nombre</th>
-                        <th></th>
+                        <th wire:click="sortBy('id')" style="cursor: pointer;">
+                            ID {!! $sortField === 'id' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                        </th>
+                        <th wire:click="sortBy('code')" style="cursor: pointer;">
+                            Código {!! $sortField === 'code' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                        </th>
+                        <th wire:click="sortBy('name')" style="cursor: pointer;">
+                            Nombre {!! $sortField === 'name' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($products as $product)
+                    @forelse ($this->products as $product)
                     <tr>
                         <td>{{ $product->id }}</td>
                         <td>{{ $product->code }}</td>
                         <td>{{ $product->name }}</td>
+                        <!--
                         <td style="text-align: right">
+
                             <button wire:click="edit({{ $product->id }})" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></button>
                             <button type="button" onclick="confirmDelete({{ $product->id }})" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
                         </td>
+                        -->
                     </tr>
                     @empty
                     <tr><td colspan="4" class="text-center">Sin productos</td></tr>
@@ -73,6 +92,11 @@
             </table>
         </div>
         <!-- /.card-body -->
+        <div class="card-footer">
+            <div class="mt-2">
+                {{ $this->products->links() }}
+            </div>
+        </div>
     </div>
     
     
@@ -81,6 +105,7 @@
 </div>
 
 @push('js')
+@livewireScripts
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function confirmDelete(id) {
@@ -92,9 +117,13 @@
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                Livewire.emit('deleteProduct', id);
+                window.Livewire.dispatch('deleteProduct', { id: id });
             }
         });
     }
+
+    Livewire.on('notify', ({ type, message }) => {
+        console.log(message);
+    });
 </script>
 @endpush

@@ -1,23 +1,26 @@
-<!-- resources/views/livewire/profiles.blade.php -->
+<!-- resources/views/livewire/permissions.blade.php -->
 <div class="container py-3">
-    <h3>Gestión de Perfiles</h3>
+    <h3>Gestión de Permisos</h3>
     <hr>
 
     @if($showForm)
     <form wire:submit.prevent="save" class="mb-4">
         <div>
-            <label>Nombre:</label>
+            <label>Slug: (Debe ser único)</label>
             <input wire:model.defer="name" type="text" class="form-control">
             @error('name') <span class="text-danger">{{ $message }}</span> @enderror
         </div>
         <div>
-            <label>Roles:</label>
-            <select wire:model="rolesSelected" multiple class="form-control">
-                @foreach($rolesList as $role)
-                    <option value="{{ $role->id }}">{{ $role->name }}</option>
-                @endforeach
-            </select>
+            <label>Nombre:</label>
+            <input wire:model.defer="displayName" type="text" class="form-control">
+            @error('displayName') <span class="text-danger">{{ $message }}</span> @enderror
         </div>
+        <div>
+            <label>Descripción:</label>
+            <input wire:model.defer="description" type="text" class="form-control">
+            @error('description') <span class="text-danger">{{ $message }}</span> @enderror
+        </div>
+
         <div class="mt-2">
             <button class="btn btn-primary">{{ $isEdit ? 'Actualizar' : 'Crear' }}</button>
             <button type="button" wire:click="resetForm" class="btn btn-secondary">Cancelar</button>
@@ -51,22 +54,26 @@
                 <thead class="thead-dark">
                     <tr>
                         <th>ID</th>
+                        <th>Slug</th>
                         <th>Nombre</th>
+                        <th>Descripción</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($profiles as $profile)
+                    @forelse ($permissions as $permission)
                     <tr>
-                        <td>{{ $profile->id }}</td>
-                        <td>{{ $profile->name }}</td>
+                        <td>{{ $permission->id }}</td>
+                        <td>{{ $permission->name }}</td>
+                        <td>{{ $permission->display_name }}</td>
+                        <td>{{ $permission->description }}</td>
                         <td style="text-align: right">
-                            <button wire:click="edit({{ $profile->id }})" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></button>
-                            <button type="button" onclick="confirmDelete({{ $profile->id }})" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                            <button wire:click="edit({{ $permission->id }})" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></button>
+                            <button type="button" onclick="confirmDelete({{ $permission->id }})" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="3" class="text-center">Sin profiles</td></tr>
+                    <tr><td colspan="4" class="text-center">Sin permissions</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -76,7 +83,7 @@
     @endif
 </div>
 
-@push('js')
+
 @push('js')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -89,7 +96,7 @@
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                Livewire.emit('deleteProfile', id);
+                window.Livewire.dispatch('deletePermission', { id: id });
             }
         });
     }

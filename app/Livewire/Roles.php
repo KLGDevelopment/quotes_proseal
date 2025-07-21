@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Permission;
 use Livewire\Component;
 use App\Models\Role;
 use Livewire\Attributes\Layout;
@@ -13,10 +14,15 @@ class Roles extends Component
     use WithPagination;
 
     public $roles, $name, $roleId;
+    public $permissionsList = [];
+    public $permissionsSelected = [];
     public $search = '';
     public $isEdit = false;
     protected $listeners = ['deleteRole' => 'delete'];
     public $showForm = false;
+    public $displayName;
+    public $description;
+
 
     protected $paginationTheme = 'bootstrap';
 
@@ -33,6 +39,7 @@ class Roles extends Component
         }
 
         $this->roles = $query->orderBy('id', 'desc')->get();
+        $this->permissionsList = Permission::orderBy('name')->get();
 
         return view('livewire.roles');
     }
@@ -57,7 +64,7 @@ class Roles extends Component
 
     public function create()
     {
-        $this->reset(['name', 'roleId', 'isEdit']);
+        $this->reset(['name', 'roleId', 'isEdit', 'permissionsSelected']);
         $this->showForm = true;
     }
 
@@ -67,15 +74,16 @@ class Roles extends Component
             'name' => 'required|unique:roles,name,' . $this->roleId,
         ]);
 
+
         if ($this->roleId) {
-            Role::find($this->roleId)?->update([
-                'name' => $this->name,
-            ]);
+            $role = Role::find($this->roleId);
+            $role?->update(['name' => $this->name, 'display_name' => $this->displayName, 'description' => $this->description]);
         } else {
-            Role::create([
-                'name' => $this->name,
-            ]);
+            $role = Role::create(['name' => $this->name, 'display_name' => $this->displayName, 'description' => $this->description]);
         }
+
+        // Use Laratrust helper to sync roles with the permission
+        $role?->syncPermissions($this->permissionsSelected);
 
         $this->resetForm();
     }
@@ -85,6 +93,9 @@ class Roles extends Component
         $role = Role::findOrFail($id);
         $this->roleId = $role->id;
         $this->name = $role->name;
+        $this->displayName = $role->display_name;
+        $this->description = $role->description;
+        $this->permissionsSelected = $role->permissions()->pluck('id')->toArray();
         $this->isEdit = true;
         $this->showForm = true;
     }
@@ -96,7 +107,7 @@ class Roles extends Component
 
     public function resetForm()
     {
-        $this->reset(['name', 'roleId', 'isEdit']);
+        $this->reset(['name', 'roleId', 'isEdit','permissionsSelected']);
         $this->showForm = false;
     }
 }

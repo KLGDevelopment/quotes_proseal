@@ -11,7 +11,7 @@ use Laratrust\Traits\HasRolesAndPermissions;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRolesAndPermissions;
+    use HasFactory, Notifiable, HasRolesAndPermissions, HasRolesAndPermissions;
 
     /**
      * The attributes that are mass assignable.
@@ -47,9 +47,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function profiles()
+    public function permissions()
     {
-        return $this->belongsToMany(Profile::class);
+        return $this->belongsToMany(Permission::class);
     }
 
     public function roles()

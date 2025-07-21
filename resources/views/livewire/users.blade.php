@@ -21,10 +21,10 @@
             @error('password') <span class="text-danger">{{ $message }}</span> @enderror
         </div>
         <div>
-            <label>Perfiles:</label>
-            <select wire:model="profilesSelected" multiple class="form-control">
-                @foreach($profilesList as $profile)
-                    <option value="{{ $profile->id }}">{{ $profile->name }}</option>
+            <label>Permisos:</label>
+            <select wire:model="permissionsSelected" multiple class="form-control">
+                @foreach($permissionsList as $permission)
+                    <option value="{{ $permission->id }}">{{ $permission->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -36,6 +36,7 @@
                 @endforeach
             </select>
         </div>
+        
         <div class="mt-2">
             <button class="btn btn-primary">{{ $isEdit ? 'Actualizar' : 'Crear' }}</button>
             <button type="button" wire:click="resetForm" class="btn btn-secondary">Cancelar</button>
@@ -70,6 +71,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
+                        <th>Correo</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -78,6 +80,7 @@
                     <tr>
                         <td>{{ $user->id }}</td>
                         <td>{{ $user->name }}</td>
+                        <td>{{ $user->email }}</td>
                         <td style="text-align: right">
                             <button wire:click="edit({{ $user->id }})" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></button>
                             <button type="button" onclick="confirmDelete({{ $user->id }})" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
@@ -94,7 +97,7 @@
     @endif
 </div>
 
-@push('js')
+
 @push('js')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>

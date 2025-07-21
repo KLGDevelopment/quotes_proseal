@@ -16,4 +16,11 @@ return [
     'important' => 'Importante',
     'warning' => 'Advertencia',
     'information' => 'Información',
+    'control_panel' => 'PANEL DE CONTROL',
+    'users' => 'Usuarios',
+    'roles' => 'Roles',
+    'permissions' => 'Permisos',
+    'products' => 'Productos',
+    'customers' => 'Clientes',
+    'odoo_masters' => 'MAESTROS ODOO',
 ];

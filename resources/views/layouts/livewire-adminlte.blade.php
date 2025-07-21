@@ -12,5 +12,5 @@
 @endpush
 
 @push('js')
-    @livewireScripts
+    
 @endpush

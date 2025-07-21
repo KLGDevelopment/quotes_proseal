@@ -112,6 +112,13 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'odoo' => [
+            'url' => env('ODOO_URL'),
+            'db' => env('ODOO_DB'),
+            'username' => env('ODOO_USERNAME'),
+            'password' => env('ODOO_PASSWORD'),
+        ],
+
     ],
 
     /*

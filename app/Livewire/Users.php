@@ -2,10 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Models\Permission;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Role;
-use App\Models\Profile;
+
 use Livewire\Attributes\Layout;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Hash;
@@ -16,9 +17,9 @@ class Users extends Component
     use WithPagination;
 
     public $users, $name, $email, $password, $userId;
-    public $profilesList = [];
+    public $permissionsList = [];
     public $rolesList = [];
-    public $profilesSelected = [];
+    public $permissionsSelected = [];
     public $rolesSelected = [];
     public $search = '';
     public $isEdit = false;
@@ -41,7 +42,7 @@ class Users extends Component
         }
 
         $this->users = $query->orderBy('id', 'desc')->get();
-        $this->profilesList = Profile::orderBy('name')->get();
+        $this->permissionsList = Permission::orderBy('name')->get();
         $this->rolesList = Role::orderBy('name')->get();
 
         return view('livewire.users');
@@ -67,7 +68,7 @@ class Users extends Component
 
     public function create()
     {
-        $this->reset(['name', 'email', 'password', 'userId', 'isEdit', 'profilesSelected', 'rolesSelected']);
+        $this->reset(['name', 'email', 'password', 'userId', 'isEdit', 'permissionsSelected', 'rolesSelected']);
         $this->showForm = true;
     }
 
@@ -97,8 +98,8 @@ class Users extends Component
             ]);
         }
 
-        // Use Laratrust helpers to sync profiles (teams) and roles
-        $user?->syncTeams($this->profilesSelected);
+        // Use Laratrust helpers to sync permissions (teams) and roles
+        $user?->syncPermissions($this->permissionsSelected);
         $user?->syncRoles($this->rolesSelected);
 
         $this->resetForm();
@@ -110,7 +111,7 @@ class Users extends Component
         $this->userId = $user->id;
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->profilesSelected = $user->profiles()->pluck('id')->toArray();
+        $this->permissionsSelected = $user->permissions()->pluck('id')->toArray();
         $this->rolesSelected = $user->roles()->pluck('id')->toArray();
         $this->password = '';
         $this->isEdit = true;
@@ -124,7 +125,7 @@ class Users extends Component
 
     public function resetForm()
     {
-        $this->reset(['name', 'email', 'password', 'userId', 'isEdit', 'profilesSelected', 'rolesSelected']);
+        $this->reset(['name', 'email', 'password', 'userId', 'isEdit', 'permissionsSelected', 'rolesSelected']);
         $this->showForm = false;
     }
 }
