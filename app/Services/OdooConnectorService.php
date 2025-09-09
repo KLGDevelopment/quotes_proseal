@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class OdooConnectorService
@@ -13,10 +14,10 @@ class OdooConnectorService
 
     public function __construct()
     {
-        $this->url = config('services.odoo.url', 'http://test-proseal.odoo.com');
-        $this->db = config('services.odoo.db', 'bmya-proseal-test-21360033');
-        $this->username = config('services.odoo.username', 'mauricio.marchant@klgtechnology.com');
-        $this->password = config('services.odoo.password', 'mauricio123');
+        $this->url = config('services.odoo.url', env('ODOO_URL'));
+        $this->db = config('services.odoo.db', env('ODOO_DB'));
+        $this->username = config('services.odoo.username', env('ODOO_USERNAME'));
+        $this->password = config('services.odoo.password', env('ODOO_PASSWORD'));
     }
 
     public function authenticate(): bool
@@ -74,4 +75,31 @@ class OdooConnectorService
 
         return json_decode($response, true) ?? [];
     }
+
+    public function callModelMethod(string $model, string $method, array $args = [])
+    {
+        if (!$this->authenticate()) {
+            throw new \Exception("No se pudo autenticar con Odoo.");
+        }
+
+        $uid = Session::get('uid');
+
+        $params = [
+            $this->db,
+            $uid,
+            $this->password,
+            $model,
+            $method,
+            $args,
+        ];
+
+        $response = $this->callOdoo("object", "execute_kw", $params);
+        Log::error($response);
+        if (isset($response['error'])) {
+            throw new \Exception($response['error']['message'] ?? 'Error desconocido al llamar a Odoo.');
+        }
+
+        return $response['result'] ?? null;
+    }
+
 }

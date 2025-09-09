@@ -116,60 +116,60 @@ class OdooAPIController extends Controller
     }
 
     public function syncOdooProducts()
-{
-    if (!Session::has('uid')) {
-        // Intenta autenticarse automáticamente
-        $auth = $this->callOdoo("common", "login", [$this->db, $this->username, $this->password]);
-        if (isset($auth['result'])) {
-            Session::put('uid', $auth['result']);
-        } else {
-            return response()->json(['error' => 'No autenticado y no se pudo iniciar sesión.']);
+    {
+        if (!Session::has('uid')) {
+            // Intenta autenticarse automáticamente
+            $auth = $this->callOdoo("common", "login", [$this->db, $this->username, $this->password]);
+            if (isset($auth['result'])) {
+                Session::put('uid', $auth['result']);
+            } else {
+                return response()->json(['error' => 'No autenticado y no se pudo iniciar sesión.']);
+            }
         }
-    }
 
-    $uid = Session::get('uid');
+        $uid = Session::get('uid');
 
-    $params = [
-        $this->db,
-        $uid,
-        $this->password,
-        "product.product",
-        "search_read",
-        [[]], // sin filtros
-        [
-            "fields" => ["id", "name", "default_code", "type", "categ_id"],
-            "limit" => 1000
-        ]
-    ];
-
-    $response = $this->callOdoo("object", "execute_kw", $params);
-
-    if (!isset($response['result']) || !is_array($response['result'])) {
-        return response()->json(['error' => 'Error al obtener productos desde Odoo']);
-    }
-
-    $odooProducts = $response['result'];
-    $imported = 0;
-
-    foreach ($odooProducts as $product) {
-
-        Product::updateOrCreate(
-            ['code' => $product['default_code'] ?? null], // criterios de búsqueda
+        $params = [
+            $this->db,
+            $uid,
+            $this->password,
+            "product.product",
+            "search_read",
+            [[]], // sin filtros
             [
-                'name'        => $product['name'],
-                'type'        => $product['type'],
-                
-                'id'     => $product['id'],
-                'odoo_category_id' => $product['categ_id'][0],
+                "fields" => ["id", "name", "default_code", "type", "categ_id"],
+                "limit" => 1000
             ]
-        );
-        $imported++;
-    }
+        ];
 
-    return response()->json([
-        'status' => 'ok',
-        'message' => "Productos sincronizados correctamente.",
-        'total' => $imported
-    ]);
-}
+        $response = $this->callOdoo("object", "execute_kw", $params);
+
+        if (!isset($response['result']) || !is_array($response['result'])) {
+            return response()->json(['error' => 'Error al obtener productos desde Odoo']);
+        }
+
+        $odooProducts = $response['result'];
+        $imported = 0;
+
+        foreach ($odooProducts as $product) {
+
+            Product::updateOrCreate(
+                ['code' => $product['default_code'] ?? null], // criterios de búsqueda
+                [
+                    'name'        => $product['name'],
+                    'type'        => $product['type'],
+                    
+                    'id'     => $product['id'],
+                    'odoo_category_id' => $product['categ_id'][0],
+                ]
+            );
+            $imported++;
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'message' => "Productos sincronizados correctamente.",
+            'total' => $imported
+        ]);
+    }
 }

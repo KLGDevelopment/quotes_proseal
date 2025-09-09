@@ -17,8 +17,12 @@ Route::middleware(['web', 'auth'])
         */
         Route::get('/odoo/customers', [OdooReadController::class, 'readCustomers']);
         Route::get('/odoo/products', [OdooReadController::class, 'readProducts']);
+        Route::get('/odoo/branch_offices', [OdooReadController::class, 'readBranchOffices']);
+        Route::get('/odoo/divisions', [OdooReadController::class, 'readDivisions']);
         Route::get('/odoo/sync/products', [OdooSyncController::class, 'syncProducts']);
-        Route::get('/odoo/sync/customers', [OdooSyncController::class, 'syncCustomers']);        
+        Route::get('/odoo/sync/customers', [OdooSyncController::class, 'syncCustomers']);  
+        Route::get('/odoo/sync/sale_order', [\App\Http\Controllers\OdooSyncController::class, 'syncSaleOrder']);
+      
     });
 
 

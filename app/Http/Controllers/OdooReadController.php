@@ -18,6 +18,30 @@ class OdooReadController extends Controller
     }
 
     /**
+     * Lectura de Sucursales (usa el método genérico).
+     */
+    public function readBranchOffices(): array
+    {
+        return $this->readModel(
+            'account.analytic.account', 
+            ['id', 'name','active','plan_id'],
+            [['plan_id', '=', 2]]
+        );
+    }
+    
+    /**
+     * Lectura de Divisones (usa el método genérico).
+     */
+    public function readDivisions(): array
+    {
+        return $this->readModel(
+            'account.analytic.account', 
+            ['id', 'name','active','plan_id'],
+            [['plan_id', '=', 3]]
+        );
+    }
+
+    /**
      * Lectura de productos (usa el método genérico).
      */
     public function readProducts(): array
@@ -25,6 +49,7 @@ class OdooReadController extends Controller
         return $this->readModel(
             'product.product', 
             ['id', 'name', 'default_code', 'type', 'categ_id'],
+            [['categ_id', '=', 17]]
         );
     }
 
@@ -35,8 +60,8 @@ class OdooReadController extends Controller
     {
         $partners = $this->readModel(
             'res.partner',
-            ['id', 'vat', 'name', 'email', 'phone', 'is_company', 'parent_id', 'customer_rank'],
-            [['customer_rank', '>', 0]]
+            ['id', 'vat', 'name', 'email', 'phone', 'is_company', 'parent_id', 'customer_rank']
+            //[['customer_rank', '>', 0]]
         );
 
         $companies = [];

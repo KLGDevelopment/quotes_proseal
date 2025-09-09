@@ -2,16 +2,109 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BranchOffice;
 use App\Models\Contact;
 use App\Models\Customer;
+use App\Models\Division;
 use App\Models\Product;
+use App\Models\Quote;
 use App\Services\OdooConnectorService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class OdooSyncController extends Controller
 {
     public function __construct(private OdooConnectorService $odoo, private OdooReadController $odooReader) {}
     
+
+    public function syncBranchOffices(): JsonResponse
+    {
+       
+        $odooItems = $this->odooReader->readBranchOffices();
+ 
+        if (empty($odooItems)) {
+            return response()->json(['error' => 'No se pudieron obtener sucursales desde Odoo.']);
+        }
+        
+        $syncedOdooIds = [];
+        $imported = 0;
+        $updated = 0;
+        
+        foreach ($odooItems as $item) {
+            if (!isset($item['name'])) continue;
+            
+            $itemModel = BranchOffice::updateOrCreate(
+                ['name' => $item['name']],
+                [
+                    'odoo_id'          => $item['id']
+                    ]
+                );
+                
+                $itemModel->wasRecentlyCreated ? $imported++ : $updated++;
+                
+                $syncedOdooIds[] = $item['id'];
+            }
+            
+            // 🧹 Eliminar productos locales que ya no existen en Odoo
+            $deleted = BranchOffice::whereNotIn('odoo_id', $syncedOdooIds)
+            ->whereNotNull('odoo_id')
+            ->delete();
+            
+            return response()->json([
+                'status'  => 'ok',
+                'message' => 'Sincronización completa',
+                'imported' => $imported,
+                'updated'  => $updated,
+                'deleted'  => $deleted,
+                'total'    => count($odooItems),
+            ]);
+    }
+
+    public function syncDivisions(): JsonResponse
+    {
+
+        $odooModelSPA = "Divisiones";
+        $function = "readDivisions";
+        $odooItems = $this->odooReader->{$function}();
+ 
+        if (empty($odooItems)) {
+            return response()->json(['error' => "No se pudieron obtener $odooModelSPA desde Odoo."]);
+        }
+
+        $syncedOdooIds = [];
+        $imported = 0;
+        $updated = 0;
+        
+        foreach ($odooItems as $item) {
+            if (!isset($item['name'])) continue;
+            
+            $itemModel = Division::updateOrCreate(
+                ['name' => $item['name']],
+                [
+                    'odoo_id'          => $item['id']
+                    ]
+                );
+                
+                $itemModel->wasRecentlyCreated ? $imported++ : $updated++;
+                
+                $syncedOdooIds[] = $item['id'];
+            }
+                 
+            // 🧹 Eliminar productos locales que ya no existen en Odoo
+            $deleted = Division::whereNotIn('odoo_id', $syncedOdooIds)
+            ->whereNotNull('odoo_id')
+            ->delete();
+            
+            return response()->json([
+                'status'  => 'ok',
+                'message' => 'Sincronización completa',
+                'imported' => $imported,
+                'updated'  => $updated,
+                'deleted'  => $deleted,
+                'total'    => count($odooItems),
+            ]);
+    }
+
     public function syncProducts(): JsonResponse
     {
         /*
@@ -81,9 +174,9 @@ class OdooSyncController extends Controller
             $customer = Customer::updateOrCreate(
                 ['odoo_id' => $customerData['id']],
                 [
-                    'name'    => $customerData['name'],
-                    'vat'    => $customerData['vat'],
-                    'email'   => is_string($customerData['email']) ? $customerData['email'] : null,
+                    'name'    => strtoupper($customerData['name']),
+                    'vat'     => strtoupper($customerData['vat']),
+                    'email'   => is_string($customerData['email']) ? strtolower($customerData['email']) : null,
                     'phone'   => is_string($customerData['phone']) ? $customerData['phone'] : null,
                 ]
             );
@@ -97,11 +190,11 @@ class OdooSyncController extends Controller
                     $contact = Contact::updateOrCreate(
                         [
                             'customer_id'        => $customer->id,
-                            'email' => is_string($contactData['email']) ? $contactData['email'] : null,
+                            'email' => is_string($contactData['email']) ? strtolower($contactData['email']) : null,
                         ],
                         [
                             'odoo_customer_id' => $customer->odoo_id,
-                            'name'               => $contactData['name'],
+                            'name'               => strtoupper($contactData['name']),
                             'phone'              => is_string($contactData['phone']) ? $contactData['phone'] : null,
                             
                             'odoo_customer_id'   => $customer->odoo_id,
@@ -131,4 +224,127 @@ class OdooSyncController extends Controller
         ]);
     }
         
+    public function syncSaleOrder(Quote $quote): JsonResponse
+    {
+        $partnerId = $quote->customer->odoo_id;
+
+        if (!$partnerId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'El cliente no tiene odoo_id asignado.',
+            ], 400);
+        }
+
+        $orderLines = [];
+
+        foreach ($quote->details as $detail) {
+            // Línea tipo sección
+            $orderLines[] = [0, 0, [
+                'display_type' => 'line_section',
+                'name' => $detail->item ?? 'SECCIÓN',
+            ]];
+
+            foreach ($detail->lines as $line) {
+                if (!$line->product || !$line->product->odoo_id) {
+                    continue;
+                }
+
+                $orderLine = [
+                    'product_id'      => $line->product->odoo_id,
+                    'product_uom_qty' => $line->quantity ?? 1,
+                    'price_unit'      => $line->sale_value ?? 0,
+                    'name'            => $line->product->name ?? null,
+                ];
+
+                /**
+                 * --- SUCURSAL / DIVISIÓN como CUENTAS ANALÍTICAS ---
+                 * Asumo que $quote->branchOffice->odoo_id y $quote->division->odoo_id
+                 * son IDs de account.analytic.account.
+                 * Si tienes solo tags, ver bloque “Etiquetas analíticas” más abajo.
+                 */
+                $distribution = [];
+
+                if (!empty($quote->branchOffice) && !empty($quote->branchOffice->odoo_id)) {
+                    // clave como string
+                    $distribution[(string) $quote->branchOffice->odoo_id] = 50.0;
+                }
+                if (!empty($quote->division) && !empty($quote->division->odoo_id)) {
+                    $distribution[(string) $quote->division->odoo_id] = isset($distribution) ? 50.0 : 100.0;
+                }
+
+                // Si sólo hay una dimensión, que reciba el 100%
+                if (count($distribution) === 1) {
+                    $k = array_key_first($distribution);
+                    $distribution[$k] = 100.0;
+                }
+
+                // Normaliza para que sume 100
+                if (!empty($distribution)) {
+                    $sum = array_sum($distribution);
+                    if ($sum > 0) {
+                        foreach ($distribution as $k => $v) {
+                            $distribution[$k] = round(($v / $sum) * 100.0, 6);
+                        }
+                        $orderLine['analytic_distribution'] = $distribution; // <- Odoo 18
+                    }
+                }
+
+                /**
+                 * --- ETIQUETAS ANALÍTICAS (opcional) ---
+                 * Si branch/division son etiquetas y ya tienes sus IDs de account.analytic.tag,
+                 * agrégalas aquí. (Si no las tienes, podemos añadir helpers para buscarlas/crearlas.)
+                 */
+                $tagIds = [];
+                if (!empty($quote->branchOffice_tag_odoo_id)) {
+                    $tagIds[] = (int) $quote->branchOffice_tag_odoo_id;
+                }
+                if (!empty($quote->division_tag_odoo_id)) {
+                    $tagIds[] = (int) $quote->division_tag_odoo_id;
+                }
+                if (!empty($tagIds)) {
+                    $orderLine['analytic_tag_ids'] = [[6, 0, array_values(array_unique($tagIds))]];
+                }
+
+                $orderLines[] = [0, 0, $orderLine];
+            }
+        }
+
+        if (empty($orderLines)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No hay líneas válidas para inyectar en Odoo.',
+            ], 400);
+        }
+
+        $orderData = [
+            'partner_id'       => $partnerId,
+            'client_order_ref' => $quote->code ?? 'COT-' . $quote->id,
+            'date_order'       => now()->toDateString(),
+            'order_line'       => $orderLines,
+        ];
+
+        try {
+            $saleOrderId = $this->odoo->callModelMethod('sale.order', 'create', [$orderData]);
+
+            return response()->json([
+                'status'  => 'ok',
+                'message' => 'Orden de venta creada en Odoo',
+                'order_id'=> $saleOrderId,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al crear orden en Odoo', [
+                'quote_id'   => $quote->id,
+                'order_data' => $orderData,
+                'exception'  => $e,
+            ]);
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
 }

@@ -22,21 +22,35 @@ return [
         'url' => 'admin/blog',
         'can' => 'manage-blog',
     ],
-    /*
+    
     [
-        'text' => 'pages',
-        'url' => 'admin/pages',
-        'icon' => 'far fa-fw fa-file',
-        'label' => 4,
+        'text' => 'quotes',
+        'url' => 'quotes',
+        'icon' => 'fas fa-file-invoice-dollar pr-1 text-left',
         'label_color' => 'success',
     ],
 
-    */
+
     ['header' => 'odoo_masters'],
     [
         'text' => 'customers',
         'url' => 'odoo_masters/customers',
         'icon' => 'fab fas fa-building pr-1 text-left',
+    ],
+    [
+        'text' => 'Divisiones',
+        'url' => 'odoo_masters/divisions',
+        'icon' => 'fas fa-layer-group pr-1 text-left',
+    ],
+    [
+        'text' => 'Maestro de Equipos',
+        'url' => 'odoo_masters/equipments',
+        'icon' => 'fab fa-fw  fa-product-hunt pr-1 text-left',
+    ],
+    [
+        'text' => 'Sucursales',
+        'url' => 'odoo_masters/branch_offices',
+        'icon' => 'fab fas fa-warehouse pr-1 text-left',
     ],
     [
         'text' => 'products',

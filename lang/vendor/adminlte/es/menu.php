@@ -23,4 +23,5 @@ return [
     'products' => 'Productos',
     'customers' => 'Clientes',
     'odoo_masters' => 'MAESTROS ODOO',
+    'quotes' => 'Cotizaciones',
 ];
