@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Confiar SIEMPRE en los proxies, pero solo en los headers X-Forwarded-*
         $middleware->trustProxies(
             at: '*',
             headers: Request::HEADER_X_FORWARDED_FOR
@@ -22,17 +23,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PROTO
         );
 
-        // Captura APP_URL una sola vez y evita null
-        $appUrl = env('APP_URL', '');
-
-        if ($appUrl !== '') {
-            URL::forceRootUrl($appUrl); // usa APP_URL como base
-
-            if (str_starts_with($appUrl, 'https://')) {
-                URL::forceScheme('https'); // fuerza https siempre
+        // Fuerza la URL base si está definida (evita nulos)
+        $appUrl = env('APP_URL');
+        if (is_string($appUrl) && $appUrl !== '') {
+            URL::forceRootUrl($appUrl);
+            // Si APP_URL trae https, forzar https
+            if (stripos($appUrl, 'https://') === 0) {
+                URL::forceScheme('https');
             }
         }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    });
