@@ -48,8 +48,8 @@ class OdooReadController extends Controller
     {
         return $this->readModel(
             'product.product', 
-            ['id', 'name', 'default_code', 'type', 'categ_id'],
-            [['categ_id', '=', 17]]
+            ['id', 'name', 'default_code', 'type', 'categ_id']
+            //[['categ_id', '=', 17]]
         );
     }
 

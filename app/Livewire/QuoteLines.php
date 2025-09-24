@@ -96,6 +96,7 @@ class QuoteLines extends CrudComponent
                 'sortable' => true,
                 'options' => Product::where('code','LIKE','COT-%')->get()->mapWithKeys(fn($c) => [$c->id => "{$c->code} - {$c->name}"])->toArray()
             ],
+            ['label' => 'Descripción', 'name' => 'description', 'type' => 'text', 'class' => 'text-center'],
             ['label' => 'Cantidad', 'name' => 'quantity', 'type' => 'input', 'class' => 'text-center'],
             ['label' => 'Valor Unitario', 'name' => 'unit_price', 'type' => 'input', 'format' => 'currency', 'class' => 'text-right', 'show_in_form' => true, 'read_only' => true, 'default' => 0],
             ['label' => 'Margen de Utilidad', 'name' => 'profit_margin', 'type' => 'input', 'class' => 'text-center', 'read_only' => true, 'format' => 'percentage', 'default' => 0],

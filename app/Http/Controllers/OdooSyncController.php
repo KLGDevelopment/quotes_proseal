@@ -254,6 +254,7 @@ class OdooSyncController extends Controller
                     'product_uom_qty' => $line->quantity ?? 1,
                     'price_unit'      => $line->sale_value ?? 0,
                     'name'            => $line->product->name ?? null,
+                    'description'     => $line->description ?? null,
                 ];
 
                 /**
