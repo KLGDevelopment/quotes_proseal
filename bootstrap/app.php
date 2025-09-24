@@ -22,14 +22,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PROTO
         );
 
-        if (env('APP_URL')) {
-            URL::forceRootUrl(env('APP_URL'));     // usa APP_URL como base
-        }
-        if (str_starts_with(env('APP_URL'), 'https://')) {
-            URL::forceScheme('https');                // fuerza https siempre
+        // Captura APP_URL una sola vez y evita null
+        $appUrl = env('APP_URL', '');
+
+        if ($appUrl !== '') {
+            URL::forceRootUrl($appUrl); // usa APP_URL como base
+
+            if (str_starts_with($appUrl, 'https://')) {
+                URL::forceScheme('https'); // fuerza https siempre
+            }
         }
     })
-
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
