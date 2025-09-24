@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,15 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(
             at: '*',
-            headers: Illuminate\Http\Request::HEADER_X_FORWARDED_FOR
-                | Illuminate\Http\Request::HEADER_X_FORWARDED_HOST
-                | Illuminate\Http\Request::HEADER_X_FORWARDED_PORT
-                | Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
         );
 
-        // fuerza https en todas las URLs generadas
-        if (env('APP_ENV') === 'production') {
-            \URL::forceScheme('https');
+        if (config('app.url')) {
+            URL::forceRootUrl(config('app.url'));     // usa APP_URL como base
+        }
+        if (str_starts_with(config('app.url'), 'https://')) {
+            URL::forceScheme('https');                // fuerza https siempre
         }
     })
 
