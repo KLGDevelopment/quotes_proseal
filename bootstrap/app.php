@@ -22,10 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PROTO
         );
 
-        if (config('app.url')) {
-            URL::forceRootUrl(config('app.url'));     // usa APP_URL como base
+        if (env('APP_URL')) {
+            URL::forceRootUrl(env('APP_URL'));     // usa APP_URL como base
         }
-        if (str_starts_with(config('app.url'), 'https://')) {
+        if (str_starts_with(env('APP_URL'), 'https://')) {
             URL::forceScheme('https');                // fuerza https siempre
         }
     })
