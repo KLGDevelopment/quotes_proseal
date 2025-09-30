@@ -87,7 +87,7 @@ class QuoteDetails extends CrudComponent{
     protected function fields(): array
     {
         return [
-            ['label' => 'Órden', 'name' => 'order', 'type' => 'input', 'sortable' => true],
+            ['label' => 'Órden', 'name' => 'order', 'type' => 'input', 'sortable' => true, 'disable_in_create' => true],
             ['label' => 'Ítem', 'name' => 'item', 'type' => 'input', 'sortable' => true],
           //  ['label' => 'Cantidad', 'name' => 'quantity', 'type' => 'input',  'class' => 'text-right', 'sortable' => true, 'show_in_form' => true],
             //['label' => 'Precio', 'name' => 'amount', 'type' => 'input', 'format' => 'currency', 'class' => 'text-right', 'sortable' => true, 'show_in_form' => false],
@@ -129,6 +129,37 @@ class QuoteDetails extends CrudComponent{
         $this->isSyncing = false;
     }
 
+    public function save(){
+        $this->validate();
+        $this->fields['quote_id'] = $this->parentId;
 
+        $nextOrder = QuoteDetail::where('quote_id', $this->parentId)->max('order') + 1;
+        if (empty($this->fields['order'])) {
+            $this->fields['order'] = $nextOrder;
+        } elseif ($this->fields['order'] < $nextOrder) {
+            // Incrementar órdenes existentes para hacer espacio
+            QuoteDetail::where('quote_id', $this->parentId)
+                ->where('order', '>=', $this->fields['order'])
+                ->increment('order');
+        } else {
+            $this->fields['order'] = $nextOrder;
+        }
 
+        parent::save();
+    }
+
+    public function delete($id)
+    {
+        $item = $this->model()::findOrFail($id);
+        $deletedOrder = $item->order;
+        $item->delete();
+
+        // Decrementar órdenes de los elementos que estaban después del eliminado
+        QuoteDetail::where('quote_id', $this->parentId)
+            ->where('order', '>', $deletedOrder)
+            ->decrement('order');
+
+        $this->dispatch('notify', type: 'success', message: 'Elemento eliminado correctamente.');
+        $this->resetPage();
+    }
 }

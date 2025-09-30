@@ -70,6 +70,13 @@ class Quotes extends CrudComponent
                 'sortable' => true,
             ],
             [
+                'label' => 'N° OT',
+                'name'  => 'work_order_number',
+                'type'  => 'text',
+                'show_in_form' => true,
+                'sortable' => true,
+            ],
+            [
                 'label' => 'Cliente',
                 'name'  => 'customer_id',
                 'type'  => 'select',
@@ -90,7 +97,8 @@ class Quotes extends CrudComponent
                 'type'  => 'select',
                 'show_in_form' => true,
                 'sortable' => true,
-                'options' => Quote::$moneyArray
+                'options' => Quote::$moneyArray,
+                'default' => 0,
             ],
             [
                 'label' => 'DA: Sucursal',

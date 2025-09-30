@@ -90,11 +90,21 @@ class QuoteLines extends CrudComponent
         return [
                    
             [
-                'label' => 'Producto',
+                'label' => 'Actividad',
                 'name'  => 'product_id',
                 'type'  => 'select',
                 'sortable' => true,
                 'options' => Product::where('code','LIKE','COT-%')->get()->mapWithKeys(fn($c) => [$c->id => "{$c->code} - {$c->name}"])->toArray()
+            ],
+            [
+                'label' => 'Producto',
+                'name' => 'second_product_id',
+                'sortable'  => true,
+                'ajax' => true,
+                'model' => \App\Models\Product::class, // Modelo externo
+                'display_column' => 'name',
+                'display_format' => '{code} - {name}', // ← mostrar ambos
+                'ajax_url' => '/api/products_ppz',
             ],
             ['label' => 'Descripción', 'name' => 'description', 'type' => 'text', 'class' => 'text-center'],
             ['label' => 'Cantidad', 'name' => 'quantity', 'type' => 'input', 'class' => 'text-center'],
@@ -118,6 +128,11 @@ class QuoteLines extends CrudComponent
     {
         return [
             'product_id' => fn($value) => Product::query()
+                ->where('code', 'like', "%{$value}%")
+                ->orWhere('name', 'like', "%{$value}%")
+                ->pluck('id')
+                ->toArray(),
+            'second_product_id' => fn($value) => Product::query()
                 ->where('code', 'like', "%{$value}%")
                 ->orWhere('name', 'like', "%{$value}%")
                 ->pluck('id')
@@ -201,5 +216,19 @@ class QuoteLines extends CrudComponent
         // (Opcional) Log para depuración
         logger()->info("Actualizado monto en QuoteDetail #{$this->quoteDetailId}: {$totalSale}");
         $this->resetForm();
+    }
+
+    protected function displayTransformations(): array
+    {
+        return [
+            'product_id' => function ($value) {
+                $product = \App\Models\Product::find($value);
+                return $product ? "{$product->code} - {$product->name}" : (string) $value;
+            },
+            'second_product_id' => function ($value) {
+                $product = \App\Models\Product::find($value);
+                return $product ? "{$product->code} - {$product->name}" : (string) $value;
+            },
+        ];
     }
 }

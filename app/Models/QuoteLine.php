@@ -8,7 +8,7 @@ use Spatie\EloquentSortable\SortableTrait;
 
 class QuoteLine extends Model
 {
-    protected $fillable = ['quote_detail_id', 'product_id', 'quantity', 'sale_value', 'unit_price','profit_margin', 'description']; // incluir 'status'
+    protected $fillable = ['quote_detail_id', 'product_id', 'quantity', 'sale_value', 'unit_price','profit_margin', 'description', 'second_product_id']; // incluir 'status'
 
 
     public function getData($attribute){

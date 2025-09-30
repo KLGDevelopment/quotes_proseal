@@ -5,10 +5,17 @@
         <form wire:submit.prevent="save" class="mb-4">
             @foreach ($this->fields() as $field)
                 @continue(isset($field['show_in_form']) && $field['show_in_form'] === false || isset($field['show_in_create']) && $field['show_in_create'] === false)
+                @php
+                    $noShow = false;
+                    if (isset($field['disable_in_create']) && $field['disable_in_create'] === true && !$isEdit)
+                        $noShow = true;
+                @endphp
                 <div class="mb-2">
+                    @if (!$noShow)
                     <label class="form-label text-capitalize">
                         {{ str_replace('_', ' ', $field['label']) }}
                     </label>
+                    @endif
 
                     @if(isset($field['ajax']) && $field['ajax'])
                         {{-- Campo AJAX Select2 --}}
@@ -91,14 +98,17 @@
                             <select class="form-control w-100">
                                 <option value="">Seleccione...</option>
                                 @foreach ($field['options'] as $optionValue => $optionLabel)
-                                    <option value="{{ $optionValue }}" @selected(($fields[$field['name']] ?? null) == $optionValue)>
+                                    <option value="{{ $optionValue }}" @selected(($fields[$field['name']] ?? null) == $optionValue) @if (isset($field['default']) && $field['default'] == $optionValue) selected @endif>
                                         {{ $optionLabel }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                     @else
+   
+                        @if (!$noShow)
                         <input wire:model.defer="fields.{{ $field['name'] }}" type="text" class="form-control" @if($field['read_only'] ?? false) readonly @endif>
+                        @endif
                     @endif
 
 

@@ -45,21 +45,55 @@ Route::middleware(['web', 'auth'])
     });
 
 
-    Route::get('/api/products', function (Request $request) {
+Route::get('/api/activities', function (Request $request) {
     $search = $request->get('q', '');
+    
+    return Product::where('code', 'LIKE', 'COT-%')
+    ->where(function($q) use ($search) {
+        $q->where('code', 'like', "%$search%")
+        ->orWhere('name', 'like', "%$search%");
+    })
+    ->orderBy('name')
+    ->limit(20)
+    ->get()
+    ->map(fn($p) => [
+        'id' => $p->id,
+        'text' => "{$p->code} - {$p->name}"
+    ]);
+});
 
-    return Product::whereNot('code', 'LIKE', 'COT-%')
-        ->where(function($q) use ($search) {
-            $q->where('code', 'like', "%$search%")
-              ->orWhere('name', 'like', "%$search%");
-        })
-        ->orderBy('name')
-        ->limit(20)
-        ->get()
-        ->map(fn($p) => [
-            'id' => $p->id,
-            'text' => "{$p->code} - {$p->name}"
-        ]);
+Route::get('/api/products_ppz', function (Request $request) {
+    $search = $request->get('q', '');
+    
+    return Product::where('code', 'LIKE', 'PPZ-%')
+    ->where(function($q) use ($search) {
+        $q->where('code', 'like', "%$search%")
+        ->orWhere('name', 'like', "%$search%");
+    })
+    ->orderBy('name')
+    ->limit(20)
+    ->get()
+    ->map(fn($p) => [
+        'id' => $p->id,
+        'text' => "{$p->code} - {$p->name}"
+    ]);
+});
+
+Route::get('/api/products', function (Request $request) {
+    $search = $request->get('q', '');
+    
+    return Product::whereNot('code', 'LIKE', 'COT-%')->whereNot('code', 'LIKE', 'PPZ-%')
+    ->where(function($q) use ($search) {
+        $q->where('code', 'like', "%$search%")
+        ->orWhere('name', 'like', "%$search%");
+    })
+    ->orderBy('name')
+    ->limit(20)
+    ->get()
+    ->map(fn($p) => [
+        'id' => $p->id,
+        'text' => "{$p->code} - {$p->name}"
+    ]);
 });
 
 Route::get('/quotes/{id}/pdf', [QuotePdfController::class, 'generate'])->name('quotes.pdf');

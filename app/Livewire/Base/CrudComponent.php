@@ -73,8 +73,13 @@ abstract class CrudComponent extends Component
             $this->parentId = $parentId;
         }
 
-        $this->sortField = session($this->sortSessionKey('field'), 'id');
-        $this->sortDirection = session($this->sortSessionKey('direction'), 'desc');
+        // Defaults: if component declares a sortable field, default sort is that field ASC.
+        // Otherwise, keep legacy defaults (id DESC).
+        $defaultField = $this->isSortable() ? $this->getSortableField() : 'id';
+        $defaultDirection = $this->isSortable() ? 'asc' : 'desc';
+
+        $this->sortField = session($this->sortSessionKey('field'), $defaultField);
+        $this->sortDirection = session($this->sortSessionKey('direction'), $defaultDirection);
     }
 
     public function sortBy($field)
