@@ -60,8 +60,8 @@ class OdooReadController extends Controller
     {
         $partners = $this->readModel(
             'res.partner',
-            ['id', 'vat', 'name', 'email', 'phone', 'is_company', 'parent_id', 'customer_rank']
-            //[['customer_rank', '>', 0]]
+            ['id', 'vat', 'name', 'email', 'phone', 'is_company', 'parent_id', 'customer_rank'],
+            [['category_id', '=', 'CLIENTE']]
         );
 
         $companies = [];
