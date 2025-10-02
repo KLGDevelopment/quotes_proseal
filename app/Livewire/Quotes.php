@@ -19,11 +19,15 @@ class Quotes extends CrudComponent
     public bool $showSyncButton = false;
 
     public $masterLink;
+    public $master_link_label;
+    public $master_link_icon;
     
     public function mount($parentId = null)
     {
       
+        $this->master_link_label = "Ver Cotización";
         $this->masterLink = "/quotes/%%rowId%%/details";
+        $this->master_link_icon = "fa fa-eye";
 
 
     }
@@ -67,6 +71,7 @@ class Quotes extends CrudComponent
                 'name'  => 'id',
                 'type'  => 'text',
                 'show_in_form' => false,
+                'show_in_index' => false,
                 'sortable' => true,
             ],
             [
@@ -96,6 +101,7 @@ class Quotes extends CrudComponent
                 'name'  => 'money_type',
                 'type'  => 'select',
                 'show_in_form' => true,
+                'show_in_index' => false,
                 'sortable' => true,
                 'options' => Quote::$moneyArray,
                 'default' => 0,

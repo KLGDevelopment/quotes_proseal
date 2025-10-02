@@ -68,6 +68,12 @@ class QuoteDetailMasters extends CrudComponent
         parent::mount($quoteLineId);
         $this->backLink = "/quotes/$this->quoteId/details/$this->quoteDetailId/lines";
         
+        $this->breadcrumbs = [
+            ['label' => 'Cotización'],
+            ['label' => 'Sección'],
+            ['label' => 'Actividad'],
+            ['label' => 'Detalle Maestro'],
+        ];        
     }
     
     // VARIALBE SEGÚN MODELO
@@ -155,6 +161,8 @@ class QuoteDetailMasters extends CrudComponent
 
         parent::save(); // ejecuta la lógica genérica de guardar
         $this->afterSaveHook(); 
+
+
     }
 
     public function afterSaveHook()

@@ -94,7 +94,11 @@ class OdooConnectorService
         ];
 
         $response = $this->callOdoo("object", "execute_kw", $params);
-        Log::error($response);
+        Log::debug('Respuesta Odoo execute_kw', [
+            'model' => $model,
+            'method'=> $method,
+            'response' => $response,
+        ]);
         if (isset($response['error'])) {
             throw new \Exception($response['error']['message'] ?? 'Error desconocido al llamar a Odoo.');
         }

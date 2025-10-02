@@ -15,6 +15,8 @@ abstract class CrudComponent extends Component
     public bool $showForm = false;
     public string $search = '';
     protected bool $afterSave = false;
+    protected array $breadcrumbs = [];
+    
 
     protected string $parentKey = 'quote_id';
     public int $parentId;

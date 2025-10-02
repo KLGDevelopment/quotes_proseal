@@ -1,5 +1,13 @@
 <div class="container py-3">
-    <h3>Cotización #{{ $this->quote->id }}</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Cotización #{{ $this->quote->id }}</h3>
+        </div>
+        <div class="col-md-6">
+            <x-breadcrumbs :items="$this->breadcrumbs ?? []" />
+        </div>
+    </div>
+   
 
     <div class="row">
         <div class="col-sm-6">
@@ -12,7 +20,7 @@
         </div>
         <div class="col-sm-6">
             <ul class="list-group mb-4">
-                <li class="list-group-item"><strong>Detalle:</strong> {{ $this->quoteDetail->item }}</li>
+                <li class="list-group-item"><strong>Sección:</strong> {{ $this->quoteDetail->item }}</li>
                 <li class="list-group-item"><strong>Valor Venta:</strong> $ {{ number_format($this->quoteDetail->getData('sale_value'), 0, ',', '.') }}</li>
             </ul>      
         </div>

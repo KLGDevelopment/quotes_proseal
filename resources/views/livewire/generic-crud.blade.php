@@ -189,6 +189,10 @@
                     <thead class="thead-dark">
                         <tr>
                             @foreach ($this->fields() as $field)
+                        
+                                @if (isset($field['show_in_index']) && $field['show_in_index'] === false)
+                                    @continue
+                                @endif
                                 @if($this->isSortable() && $field['name'] === $this->getSortableField())
                                     <th colspan="1"
                                         @if($field['sortable'] ?? false)
@@ -211,7 +215,7 @@
                                     </th>
                                 @endif
                             @endforeach
-                            <th style="width: 140px;">Acciones</th>
+                            <th style="width: 200px;">Acciones</th>
                         </tr>
                     </thead>
 
@@ -219,6 +223,9 @@
                     @forelse ($items as $index => $item)
                         <tr>
                             @foreach ($this->fields() as $field)
+                                @if (isset($field['show_in_index']) && $field['show_in_index'] === false)
+                                    @continue
+                                @endif
                                 @php
                                     $rawValue = $item[$field['name']] ?? '';
                                     $value = method_exists($this, 'transformValue')
@@ -286,7 +293,8 @@
                                     $route = str_replace("%%rowId%%", $item->id, $masterLink);
                                 @endphp
                                 <a href="{{ $route }}" class="btn btn-sm btn-info">
-                                    <i class="fa fa-list-ol"></i>
+                                    @if (isset($master_link_label)){{ $master_link_label }}&nbsp;@endif <i class="@if (isset($master_link_icon)){{ $master_link_icon }}@else fa fa-list-ol @endif"></i>
+                                    
                                 </a>
                                 @endif
                                 <button wire:click="edit({{ $item->id }})" class="btn btn-sm btn-warning">

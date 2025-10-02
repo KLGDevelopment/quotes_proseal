@@ -4,13 +4,21 @@ namespace App\Livewire;
 use App\Livewire\Base\CrudComponent;
 use App\Models\Quote;
 use App\Models\QuoteDetail;
+use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Layout;
 use \Illuminate\Support\Facades\Auth;
 
 #[Layout('layouts.livewire-adminlte')]
 class QuoteDetails extends CrudComponent{
 
-    
+    public Quote $quote;
+    protected ?string $sortableField = 'order';
+    public $masterLink;
+    public $backLink;    
+    public $master_link_label;
+
+    public array $extraButtons = [];
+
 
     public function approveBasic($id)
     {
@@ -31,12 +39,7 @@ class QuoteDetails extends CrudComponent{
         }
     }
 
-    public Quote $quote;
-    protected ?string $sortableField = 'order';
-    public $masterLink;
-    public $backLink;    
 
-    public array $extraButtons = [];
 
     public function mount($parentId = null)
     {
@@ -44,6 +47,7 @@ class QuoteDetails extends CrudComponent{
         $this->showSyncButton = false;
         parent::mount($parentId);
         $this->masterLink = "/quotes/".$parentId."/details/%%rowId%%/lines";
+        $this->master_link_label = "Ver Seccción";
         $this->backLink = "/quotes";
 
         $this->extraButtons = [
@@ -62,6 +66,12 @@ class QuoteDetails extends CrudComponent{
                  'target_blank' => false,
             ],
         ];
+
+
+       $this->breadcrumbs = [
+            ['label' => 'Cotización'],
+            ['label' => 'Secciones'],
+        ];
     }
     
     protected function model(): string { return QuoteDetail::class; }
@@ -76,7 +86,7 @@ class QuoteDetails extends CrudComponent{
     
     public function title(): string
     {
-        return 'Detalles de Cotización';
+        return 'Secciones';
     }
     
     protected function baseQuery()

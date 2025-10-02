@@ -20,6 +20,7 @@ class QuoteLines extends CrudComponent
     protected string $parentKey = 'quote_detail_id';
     protected bool $afterSave = true;
     public $masterLink;
+    public string $master_link_label;
     public $backLink;
     
     public $quoteId;
@@ -29,7 +30,7 @@ class QuoteLines extends CrudComponent
 
     public function title(): string
     {
-        return 'Lineas de Detalle';
+        return 'Actividades';
     }
 
     public function hydrate()
@@ -64,8 +65,13 @@ class QuoteLines extends CrudComponent
         parent::mount($quoteDetailId);
         $this->backLink = "/quotes/$this->quoteId/details";
         $this->masterLink = "/quotes/$this->quoteId/details/$this->quoteDetailId/lines/%%rowId%%/master";
+        $this->master_link_label  = "Detalle Maestro"; 
         
-        
+        $this->breadcrumbs = [
+            ['label' => 'Cotización'],
+            ['label' => 'Sección'],
+            ['label' => 'Actividades'],
+        ];
     }
     
     // VARIALBE SEGÚN MODELO

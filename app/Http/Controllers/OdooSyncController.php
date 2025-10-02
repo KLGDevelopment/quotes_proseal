@@ -249,12 +249,20 @@ class OdooSyncController extends Controller
                     continue;
                 }
 
+                // Construye el nombre de la línea según lo esperado por Odoo (sale.order.line no admite 'description')
+                $lineName = (string) ($line->product->name ?? '');
+                if (!empty($line->description)) {
+                    $lineName = trim($lineName !== '' ? ($lineName . ' - ' . $line->description) : (string) $line->description);
+                }
+                if ($lineName === '') {
+                    $lineName = 'ITEM';
+                }
+
                 $orderLine = [
                     'product_id'      => $line->product->odoo_id,
                     'product_uom_qty' => $line->quantity ?? 1,
                     'price_unit'      => $line->sale_value ?? 0,
-                    'name'            => $line->product->name ?? null,
-                    'description'     => $line->description ?? null,
+                    'name'            => $lineName,
                 ];
 
                 /**
@@ -325,6 +333,10 @@ class OdooSyncController extends Controller
         ];
 
         try {
+            Log::debug('Enviando orden a Odoo', [
+                'quote_id'   => $quote->id,
+                'order_data' => $orderData,
+            ]);
             $saleOrderId = $this->odoo->callModelMethod('sale.order', 'create', [$orderData]);
 
             return response()->json([
